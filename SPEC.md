@@ -55,7 +55,7 @@ aplicação a idiomas, repetição espaçada completa.
 ### Stack
 
 - **Backend:** Python 3.12+, FastAPI, `anthropic`, SQLite (FTS5), `pypdf`, `python-docx`.
-- **Frontend:** leve e sem build pesado (HTML + JS, ou Vite/React se necessário). Mapas via Markmap ou Mermaid.
+- **Frontend:** HTML + JavaScript puro (módulos ES), servido pelo próprio FastAPI, sem etapa de build. Mapas via Markmap ou Mermaid.
 - **Testes:** pytest. Chamadas à Claude sempre mockadas nos testes.
 
 ### Interface de LLM
@@ -76,6 +76,7 @@ configuração, nunca espalhados no código.
 - Tipos: Google Docs, Google Sheets (como texto), PDF, DOCX, TXT/MD.
 - Google Docs são exportados como texto pela API. Os demais são baixados em memória, extraídos e descartados.
 - Re-sincronizar um arquivo atualiza seus chunks (compara `modifiedTime`).
+- A atualização é **incremental por documento**: se `modifiedTime` mudou, apaga os chunks daquele documento e insere os novos em uma transação. Os demais documentos não são tocados.
 
 ### 5.2 Ingestão e busca
 - Chunks de ~500–800 tokens com pequena sobreposição, guardando `documento`, `posição` e `título/página` quando houver.
@@ -86,7 +87,8 @@ configuração, nunca espalhados no código.
 ### 5.3 Mentor
 - Responde só com base nos trechos recuperados. Se não houver base, diz isso e pode responder com conhecimento geral **sinalizando**.
 - Toda afirmação baseada em material traz citação `[arquivo, trecho]`.
-- Memória: objetivo do usuário, módulo/fase atual, tópicos já estudados, pontos fracos (vindos dos quizzes).
+- Memória: objetivo do usuário, módulo atual, tópicos já estudados, pontos fracos (vindos dos quizzes).
+- **Plano de estudos = lista estruturada de módulos.** Cada módulo tem título, descrição, ordem, status (`a_fazer`, `em_andamento`, `concluido`) e, opcionalmente, arquivos associados. O usuário edita a lista e o mentor pode propor módulos e mudanças de status, que o usuário confirma.
 - Ação "o que estudar agora?": sugere próximo passo com base no plano e no histórico.
 - Prompt caching no prompt de sistema e no plano de estudos.
 
@@ -132,8 +134,12 @@ configuração, nunca espalhados no código.
 3. Pergunto "o que estudar agora?" e recebo um próximo passo coerente com o plano.
 4. Nada de segredo no repo; `git grep` por chaves não retorna nada.
 
-## 10. Perguntas em aberto
+## 10. Decisões registradas
 
-- Frontend: HTML/JS puro ou Vite + React/TypeScript (mais próximo do Ritmo)?
-- Formato do plano de estudos: texto livre ou lista estruturada de módulos?
-- O índice FTS deve ser reconstruído a cada sincronização ou atualizado de forma incremental?
+- **Frontend:** HTML/JS puro, sem build (mais leve; pode migrar depois se a interface crescer).
+- **Plano de estudos:** lista estruturada de módulos (ver 5.3).
+- **Índice FTS:** atualização incremental por documento, em transação (ver 5.1). Reconstrução total só como comando de manutenção.
+
+## 11. Perguntas em aberto
+
+- (nenhuma no momento)

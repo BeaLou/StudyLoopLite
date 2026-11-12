@@ -15,7 +15,7 @@ nesta stack, Python). Comunicação em português do Brasil.
 - Trabalhar em branch e abrir PR; nunca commitar direto na `main` depois do bootstrap.
 - Commits pequenos, mensagens em português no imperativo (ex.: `Adiciona ClaudeProvider`).
 - Mudou o escopo ou uma decisão? Atualizar o `SPEC.md` no mesmo PR.
-- Se algo do `SPEC.md` estiver ambíguo, perguntar antes de decidir. Registrar a resposta na seção 10.
+- Se algo do `SPEC.md` estiver ambíguo, perguntar antes de decidir. Listar a dúvida na seção 11 e, ao ser respondida, registrar a decisão na seção 10.
 
 ## Restrições que não podem ser quebradas
 
