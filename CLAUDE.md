@@ -56,6 +56,14 @@ pytest
 ruff check . && ruff format --check .
 ```
 
+Teste manual do M1a (indexa arquivos locais e busca, sem precisar de chave nem de Drive):
+
+```bash
+python -m studyloop.ingest.cli material.pdf notas.md aula.docx --buscar "modelagem plana"
+curl "http://127.0.0.1:8000/documents"
+curl "http://127.0.0.1:8000/search?q=modelagem+plana"
+```
+
 Teste manual do M0:
 
 ```bash

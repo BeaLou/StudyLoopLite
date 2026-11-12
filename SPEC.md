@@ -121,7 +121,8 @@ configuração, nunca espalhados no código.
 | Marco | Entrega | Pronto quando |
 |---|---|---|
 | **M0** | Esqueleto: FastAPI, SQLite, config, `LLMProvider` + `ClaudeProvider`, endpoint `/health` e `/chat` simples | Rodar localmente e conversar com a Claude; testes passando |
-| **M1** | Drive + ingestão: OAuth, Picker, extração, chunks, FTS5 | Selecionar arquivos do Drive e buscar trechos por palavra-chave |
+| **M1a** | Ingestão e busca: extração (txt, md, pdf, docx, texto do Google), chunks, FTS5, ingestão incremental, busca BM25, CLI local de desenvolvimento | Indexar arquivos locais e buscar trechos com citação de arquivo/página/título |
+| **M1b** | Drive: OAuth, Picker, download/export dos arquivos escolhidos, sincronização por `modifiedTime` | Selecionar arquivos do Drive e buscá-los por palavra-chave |
 | **M2** | Mentor com RAG: citações, memória do plano, "o que estudar agora?" | Respostas citam fontes; plano persiste entre sessões |
 | **M3** | Quizzes: geração, correção, histórico por tópico | Quiz de um arquivo, com resultado salvo e usado pelo mentor |
 | **M4** | Mapas mentais: geração, render, exportação | Mapa de um arquivo renderizado e exportável |
@@ -139,6 +140,10 @@ configuração, nunca espalhados no código.
 - **Frontend:** HTML/JS puro, sem build (mais leve; pode migrar depois se a interface crescer).
 - **Plano de estudos:** lista estruturada de módulos (ver 5.3).
 - **Índice FTS:** atualização incremental por documento, em transação (ver 5.1). Reconstrução total só como comando de manutenção.
+
+- **M1 dividido em M1a e M1b:** a ingestão e a busca não dependem das credenciais do Google, então são entregues e testadas antes do OAuth/Picker.
+- **Busca:** consulta livre vira termos unidos por OR (sem a sintaxe do FTS5); palavras comuns do português são ignoradas; palavras com 6+ letras usam prefixo (sem as 2 últimas letras) para casar plurais e flexões; o título do trecho pesa o dobro do corpo.
+- **Chunks:** ~400 palavras (máx. 550) com 40 de sobreposição; nunca atravessam páginas nem títulos, para a citação ser exata. PDFs escaneados (sem texto) são recusados; OCR está fora de escopo.
 
 ## 11. Perguntas em aberto
 
