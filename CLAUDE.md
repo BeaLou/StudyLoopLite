@@ -45,12 +45,21 @@ nesta stack, Python). Comunicação em português do Brasil.
 - Antes de cada PR: `git grep -nEi "sk-ant|api[_-]?key|client_secret"` não deve achar segredos.
 - Logs sem conteúdo de documentos.
 
-## Como rodar (preencher no M0)
+## Como rodar
 
 ```bash
-# python -m venv .venv && source .venv/bin/activate
-# pip install -e ".[dev]"
-# cp .env.example .env   # preencher ANTHROPIC_API_KEY
-# uvicorn studyloop.main:app --reload
-# pytest
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"
+cp .env.example .env        # preencher ANTHROPIC_API_KEY
+uvicorn studyloop.main:app --reload
+pytest
+ruff check . && ruff format --check .
+```
+
+Teste manual do M0:
+
+```bash
+curl http://127.0.0.1:8000/health
+curl -X POST http://127.0.0.1:8000/chat -H "Content-Type: application/json" \
+  -d '{"message": "Explique o que é uma moulage em duas frases."}'
 ```
