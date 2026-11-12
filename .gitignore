@@ -1,0 +1,33 @@
+# Segredos
+.env
+.env.*
+!.env.example
+*.pem
+client_secret*.json
+token*.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Dados locais
+*.db
+*.sqlite
+*.sqlite3
+data/
+
+# Frontend
+node_modules/
+
+# Editor / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
