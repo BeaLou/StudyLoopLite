@@ -2,16 +2,19 @@
 
 # Sem `from __future__ import annotations` de propósito: o FastAPI precisa resolver as
 # anotações das rotas (inclusive `get_provider`, que é local a `create_app`).
+from dataclasses import asdict
 from typing import Annotated, Literal
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
 from studyloop import __version__
 from studyloop.config import Settings, load_dotenv, load_settings
 from studyloop.db import Database
+from studyloop.ingest.service import list_documents
 from studyloop.llm.base import LLMProvider, Message
 from studyloop.llm.claude import ClaudeProvider, create_claude_client
+from studyloop.rag.search import DEFAULT_TOP_K, search
 
 MENTOR_SYSTEM_PROMPT = (
     "Você é o mentor de estudos do StudyLoop Lite. Responda sempre em português do Brasil, "
@@ -32,6 +35,16 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
+
+
+class SearchHitResponse(BaseModel):
+    chunk_id: int
+    document_id: int
+    document_name: str
+    page: int | None
+    heading: str | None
+    text: str
+    score: float
 
 
 def create_app(settings: Settings | None = None, provider: LLMProvider | None = None) -> FastAPI:
@@ -83,6 +96,17 @@ def create_app(settings: Settings | None = None, provider: LLMProvider | None = 
         messages.append({"role": "user", "content": body.message})
         reply = llm.chat(MENTOR_SYSTEM_PROMPT, messages, model_tier="smart")
         return ChatResponse(reply=reply)
+
+    @app.get("/documents")
+    def documents() -> list[dict[str, object]]:
+        return list_documents(database)
+
+    @app.get("/search", response_model=list[SearchHitResponse])
+    def search_endpoint(
+        q: str, k: int = Query(DEFAULT_TOP_K, ge=1, le=20)
+    ) -> list[SearchHitResponse]:
+        hits = search(database, q, k=k)
+        return [SearchHitResponse(**asdict(h)) for h in hits]
 
     return app
 

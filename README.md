@@ -7,8 +7,11 @@ Escopo, arquitetura e marcos: veja [`SPEC.md`](SPEC.md).
 
 ## Status
 
-**M0** (esqueleto): API FastAPI com `/health` e `/chat`, configuração por `.env`, SQLite e
-`ClaudeProvider`. Drive, RAG, quizzes e mapas mentais vêm nos próximos marcos.
+- **M0** (esqueleto): API FastAPI com `/health` e `/chat`, configuração por `.env`, SQLite e
+  `ClaudeProvider`.
+- **M1a** (ingestão e busca): extração de texto (txt, md, pdf, docx), chunks, índice FTS5 e
+  busca com citação de arquivo, página e título. Drive (M1b), mentor com RAG, quizzes e mapas
+  mentais vêm nos próximos marcos.
 
 ## Começando
 

@@ -18,6 +18,42 @@ CREATE TABLE IF NOT EXISTS usage (
     cache_read_tokens INTEGER NOT NULL DEFAULT 0,
     cache_creation_tokens INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS documents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    source_id TEXT NOT NULL UNIQUE,   -- ID do arquivo no Drive (ou "local:<caminho>")
+    name TEXT NOT NULL,
+    mime_type TEXT NOT NULL,
+    modified_time TEXT,               -- modifiedTime da fonte, usado para sincronizar
+    synced_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS chunks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    document_id INTEGER NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    position INTEGER NOT NULL,        -- ordem do trecho dentro do documento
+    page INTEGER,                     -- página (PDF), quando houver
+    heading TEXT,                     -- título/seção, quando houver
+    text TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_chunks_document ON chunks(document_id, position);
+
+-- Índice de busca por palavra-chave (BM25), sem acentos. Guarda só o índice;
+-- o texto fica em `chunks` (tabela de conteúdo externo).
+CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(
+    text, heading,
+    content='chunks', content_rowid='id',
+    tokenize='unicode61 remove_diacritics 2'
+);
+
+CREATE TRIGGER IF NOT EXISTS chunks_ai AFTER INSERT ON chunks BEGIN
+    INSERT INTO chunks_fts(rowid, text, heading) VALUES (new.id, new.text, new.heading);
+END;
+
+CREATE TRIGGER IF NOT EXISTS chunks_ad AFTER DELETE ON chunks BEGIN
+    INSERT INTO chunks_fts(chunks_fts, rowid, text, heading)
+    VALUES ('delete', old.id, old.text, old.heading);
+END;
 """
 
 
@@ -36,6 +72,7 @@ class Database:
     def connect(self) -> Iterator[sqlite3.Connection]:
         conn = sqlite3.connect(self.path)
         conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys = ON")
         try:
             yield conn
             conn.commit()

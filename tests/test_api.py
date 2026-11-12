@@ -68,6 +68,32 @@ def test_chat_rejeita_mensagem_vazia(settings):
     assert client.post("/chat", json={"message": ""}).status_code == 422
 
 
+def test_documents_e_search(settings):
+    from studyloop.ingest.service import ingest_document
+
+    app = create_app(settings, provider=FakeProvider())
+    ingest_document(
+        app.state.database, source_id="a", name="aula.md", mime_type="text/markdown",
+        modified_time="1", data=b"# Moulage\nTecnica de modelagem sobre o manequim.",
+    )
+    client = TestClient(app)
+
+    docs = client.get("/documents").json()
+    assert [(d["name"], d["chunk_count"]) for d in docs] == [("aula.md", 1)]
+
+    hits = client.get("/search", params={"q": "manequim"}).json()
+    assert hits[0]["document_name"] == "aula.md"
+    assert hits[0]["heading"] == "Moulage"
+    assert client.get("/search", params={"q": "zzz"}).json() == []
+
+
+def test_search_valida_parametros(settings):
+    client = TestClient(create_app(settings, provider=FakeProvider()))
+    assert client.get("/search").status_code == 422
+    assert client.get("/search", params={"q": "x", "k": 0}).status_code == 422
+    assert client.get("/search", params={"q": "x", "k": 99}).status_code == 422
+
+
 def test_chat_rejeita_papel_invalido_no_historico(settings):
     client = TestClient(create_app(settings, provider=FakeProvider()))
     r = client.post(

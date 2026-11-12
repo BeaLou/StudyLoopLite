@@ -8,6 +8,21 @@ def test_init_cria_pasta_e_tabela(tmp_path):
     assert db.usage_totals()["calls"] == 0
 
 
+def test_init_cria_tabelas_de_ingestao_e_indice(tmp_path):
+    db = Database(tmp_path / "app.db")
+    db.init()
+    with db.connect() as conn:
+        nomes = {r[0] for r in conn.execute("SELECT name FROM sqlite_master")}
+    assert {"documents", "chunks", "chunks_fts", "usage"} <= nomes
+
+
+def test_chaves_estrangeiras_ativas(tmp_path):
+    db = Database(tmp_path / "app.db")
+    db.init()
+    with db.connect() as conn:
+        assert conn.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+
+
 def test_init_e_idempotente(tmp_path):
     db = Database(tmp_path / "app.db")
     db.init()

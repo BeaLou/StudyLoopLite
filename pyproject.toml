@@ -12,6 +12,8 @@ dependencies = [
     "uvicorn>=0.30",
     "anthropic>=0.40",
     "pydantic>=2.7",
+    "pypdf>=4",
+    "python-docx>=1",
 ]
 
 [project.optional-dependencies]
